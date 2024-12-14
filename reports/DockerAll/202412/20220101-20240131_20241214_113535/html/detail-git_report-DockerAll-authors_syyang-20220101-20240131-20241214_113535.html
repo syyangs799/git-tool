@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Git 提交分析报告</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;color:#333;max-width:1200px;margin:0 auto;padding:20px;background-color:#f5f5f5}
+.container{background-color:white;padding:30px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+h1,h2,h3,h4,h5,h6{color:#2c3e50;margin-top:24px;margin-bottom:16px}
+h1{font-size:2em;border-bottom:2px solid #eaecef;padding-bottom:0.3em}
+h2{font-size:1.5em;border-bottom:1px solid #eaecef;padding-bottom:0.3em}
+h3{font-size:1.25em}
+table{border-collapse:collapse;width:100%;margin:16px 0}
+th,td{border:1px solid #dfe2e5;padding:8px 12px;text-align:left}
+th{background-color:#f6f8fa}
+tr:nth-child(even){background-color:#f8f9fa}
+code{background-color:#f6f8fa;padding:2px 4px;border-radius:3px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;font-size:85%}
+pre{background-color:#f6f8fa;padding:16px;border-radius:6px;overflow:auto}
+a{color:#0366d6;text-decoration:none}
+a:hover{text-decoration:underline}
+.nav{position:fixed;top:20px;right:20px;background:white;padding:15px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.nav ul{list-style:none;padding:0;margin:0}
+.nav li{margin:8px 0}
+.badge{display:inline-block;padding:3px 6px;border-radius:3px;font-size:12px;font-weight:600;color:white;background-color:#28a745}
+.badge.red{background-color:#dc3545}
+.badge.blue{background-color:#0366d6}
+.badge.yellow{background-color:#ffd700;color:#333}
+ul{list-style-type:disc;padding-left:2em}
+li{margin:0.5em 0}
+code{word-wrap:break-word;max-width:100%}
+</style>
+</head>
+<body>
+<div class="container"><h1 id="git-提交报告">📊 Git 提交报告</h1>
+
+<h2 id="仓库信息">📌 仓库信息</h2>
+
+<ul>
+<li><strong>仓库名称</strong>: <code>DockerAll</code></li>
+<li><strong>仓库路径</strong>: <code>D:\workspace\github\DockerAll</code></li>
+<li><strong>当前分支</strong>: <code>master</code></li>
+<li><strong>分析时间范围</strong>: 2022-01-01 至 2024-01-31</li>
+<li><strong>报告生成时间</strong>: 2024-12-14 11:35:35</li>
+</ul>
+
+<h3 id="分支列表">🌿 分支列表</h3>
+
+<p>👉 <code>master</code></p>
+
+<h2 id="统计摘要">📈 统计摘要</h2>
+
+<ul>
+<li><strong>总提交次数</strong>: 4 次</li>
+<li><strong>代码变更</strong>: +53 行, -0 行</li>
+</ul>
+
+<h2 id="作者贡献">👥 作者贡献</h2>
+
+<table>
+<thead>
+<tr>
+  <th>作者</th>
+  <th>邮箱</th>
+  <th>提交次数</th>
+  <th>添加行数</th>
+  <th>删���行数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>syyang</td>
+  <td>zhangyyangs@163.com</td>
+  <td>3</td>
+  <td>+51</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td>syyangs799</td>
+  <td>zhangyyangs@163.com</td>
+  <td>1</td>
+  <td>+2</td>
+  <td>-0</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="文件变更统计">📁 文件变更统计</h2>
+
+<table>
+<thead>
+<tr>
+  <th>文件</th>
+  <th>变更次数</th>
+  <th>添加行数</th>
+  <th>删除行数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>Database/Mysql.md</code></td>
+  <td>2</td>
+  <td>+26</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>Database/Postgres.md</code></td>
+  <td>2</td>
+  <td>+10</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>Database/Redis.md</code></td>
+  <td>2</td>
+  <td>+9</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>Database/Starrocks.md</code></td>
+  <td>1</td>
+  <td>+6</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>Database/Oracle.md</code></td>
+  <td>1</td>
+  <td>+0</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>MQ/Kafka.md</code></td>
+  <td>1</td>
+  <td>+0</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>MQ/RabbitMq.md</code></td>
+  <td>1</td>
+  <td>+0</td>
+  <td>-0</td>
+</tr>
+<tr>
+  <td><code>README.md</code></td>
+  <td>1</td>
+  <td>+2</td>
+  <td>-0</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="详细提交记录">📝 详细提交记录</h2>
+
+<h3 id="2023-12-21">📅 2023-12-21</h3>
+
+<h4 id="提交-400bf500">⚡ 提交 <code>400bf500</code></h4>
+
+<ul>
+<li><strong>作者</strong>: syyang <a href="&#x6d;&#x61;&#x69;&#108;&#116;o&#58;&#122;&#104;&#x61;&#110;&#x67;&#x79;&#121;&#97;&#x6e;&#x67;&#115;&#64;&#x31;6&#x33;&#x2e;&#99;&#x6f;&#x6d;">&#122;&#104;&#x61;&#110;&#x67;&#x79;&#121;&#97;&#x6e;&#x67;&#115;&#64;&#x31;6&#x33;&#x2e;&#99;&#x6f;&#x6d;</a></li>
+<li><strong>时间</strong>: 06:21:42</li>
+<li><strong>变更</strong>: +6 行, -0 行</li>
+<li><strong>说明</strong>: [init][add][新增starocks的docker脚本文档]</li>
+</ul>
+
+<p><strong>变更文件</strong>:
+- <code>Database/Starrocks.md</code>: +6 -0</p>
+
+<hr />
+
+<h4 id="提交-8c2c8aa0">⚡ 提交 <code>8c2c8aa0</code></h4>
+
+<ul>
+<li><strong>作者</strong>: syyang <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#x3a;&#x7a;&#x68;&#97;&#110;&#x67;&#121;&#121;&#x61;&#x6e;g&#x73;&#64;&#49;&#54;&#x33;&#46;c&#111;&#x6d;">&#x7a;&#x68;&#97;&#110;&#x67;&#121;&#121;&#x61;&#x6e;g&#x73;&#64;&#49;&#54;&#x33;&#46;c&#111;&#x6d;</a></li>
+<li><strong>时间</strong>: 06:16:47</li>
+<li><strong>变更</strong>: +45 行, -0 行</li>
+<li><strong>说明</strong>: [init][add][新增mysql、postgres、redis的docker脚本文档]</li>
+</ul>
+
+<p><strong>变更文件</strong>:
+- <code>Database/Mysql.md</code>: +26 -0
+- <code>Database/Postgres.md</code>: +10 -0
+- <code>Database/Redis.md</code>: +9 -0</p>
+
+<hr />
+
+<h4 id="提交-9bfb8486">⚡ 提交 <code>9bfb8486</code></h4>
+
+<ul>
+<li><strong>作者</strong>: syyang <a href="&#x6d;&#97;&#x69;&#108;t&#111;&#58;&#122;&#x68;&#97;&#x6e;&#x67;&#x79;&#x79;&#97;&#x6e;&#103;&#x73;&#x40;&#x31;&#54;&#51;&#46;&#99;&#111;&#109;">&#122;&#x68;&#97;&#x6e;&#x67;&#x79;&#x79;&#97;&#x6e;&#103;&#x73;&#x40;&#x31;&#54;&#51;&#46;&#99;&#111;&#109;</a></li>
+<li><strong>时间</strong>: 05:04:42</li>
+<li><strong>变更</strong>: +0 行, -0 行</li>
+<li><strong>说明</strong>: [init][add][新建相关docker的脚本文档]</li>
+</ul>
+
+<p><strong>变更文件</strong>:
+- <code>Database/Mysql.md</code>: +0 -0
+- <code>Database/Oracle.md</code>: +0 -0
+- <code>Database/Postgres.md</code>: +0 -0
+- <code>Database/Redis.md</code>: +0 -0
+- <code>MQ/Kafka.md</code>: +0 -0
+- <code>MQ/RabbitMq.md</code>: +0 -0</p>
+
+<hr />
+
+<h4 id="提交-73341ba9">⚡ 提交 <code>73341ba9</code></h4>
+
+<ul>
+<li><strong>作者</strong>: syyangs799 <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#x3a;z&#104;&#97;&#x6e;&#103;&#x79;&#121;a&#110;&#x67;&#115;&#64;&#49;&#54;&#x33;&#x2e;&#x63;&#111;&#109;">z&#104;&#97;&#x6e;&#103;&#x79;&#121;a&#110;&#x67;&#115;&#64;&#49;&#54;&#x33;&#x2e;&#x63;&#111;&#109;</a></li>
+<li><strong>时间</strong>: 04:55:50</li>
+<li><strong>变更</strong>: +2 行, -0 行</li>
+<li><strong>说明</strong>: Initial commit</li>
+</ul>
+
+<p><strong>变更文件</strong>:
+- <code>README.md</code>: +2 -0</p>
+
+<hr />
+</div>
+</body>
+</html>

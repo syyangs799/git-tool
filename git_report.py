@@ -91,11 +91,7 @@ class GitReportGenerator:
             author_info = set()
             if authors:
                 all_authors = self.get_authors()
-                print("\n调试信息:")
-                print(f"搜索的作者: {authors}")
-                print("仓库中的所有作者:")
-                for author in all_authors:
-                    print(f"  {author}")
+                print("\n匹配作者信息:")
                 
                 for full_author in all_authors:
                     name_email = full_author.lower()
@@ -103,9 +99,10 @@ class GitReportGenerator:
                         if search_author.lower() in name_email:
                             author_name = full_author.split(' <')[0]
                             author_info.add(author_name)
-                            print(f"找到匹配: {search_author} -> {author_name}")
+                            print(f"✓ 找到匹配: {search_author} -> {author_name}")
                 
-                print(f"最终匹配到的作者: {author_info}")
+                if not author_info:
+                    print("⚠️ 警告: 未找到匹配的作者")
             
             # 获取所有提交
             all_commits = self.repo.iter_commits()
@@ -177,7 +174,7 @@ class GitReportGenerator:
             authors_stats[author]['email'] = commit['email']  # 保存作者邮箱
         
         report += "\n## 👥 作者贡献\n\n"
-        report += "| 作者 | 邮箱 | 提交次数 | 添加行数 | 删除行数 |\n"
+        report += "| 作者 | 邮箱 | 提交次数 | 添加行数 | 删���行数 |\n"
         report += "|------|------|----------|----------|----------|\n"
         for author, stats in authors_stats.items():
             report += f"| {author} | {stats['email']} | {stats['commits']} | +{stats['insertions']} | -{stats['deletions']} |\n"
@@ -224,7 +221,7 @@ class GitReportGenerator:
         return report
     
     def _format_date_range(self, start_date, end_date):
-        """格式化日期范围显示"""
+        """格式化日期范围显��"""
         if start_date and end_date:
             return f"{start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}"
         elif start_date:
@@ -234,35 +231,78 @@ class GitReportGenerator:
         else:
             return "最近7天"
     
-    def save_report(self, report, output_dir, output_file):
-        """保存报告到指定目录"""
+    def save_report(self, report, output_dir, output_file, format='md'):
+        """保存报告到指定目录，支持md和html格式"""
         try:
-            # 确定报告类型和对应的子目录
-            if output_file.startswith('summary-'):
-                sub_dir = 'summary'
-            elif output_file.startswith('detail-'):
-                sub_dir = 'details'
-            elif output_file.startswith('maven-'):
-                sub_dir = 'maven'
-            else:
-                sub_dir = ''
+            print(f"\n开始保存报告: {output_file}")
+            print(f"输出目录: {output_dir}")
+            print(f"输出格式: {format}")
             
-            # 构建完整的输出路径
-            if sub_dir:
-                output_path = os.path.join(output_dir, sub_dir, output_file)
-            else:
-                output_path = os.path.join(output_dir, output_file)
+            generated_files = []
             
-            # 确保目录存在
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            # 根据format参数保存文件
+            if format in ['md', 'both']:
+                # 确定MD文件的保存路径
+                if args.flat_dir:
+                    md_path = os.path.join(output_dir, 'md', os.path.splitext(output_file)[0] + '.md')
+                else:
+                    if output_file.startswith('summary-'):
+                        md_path = os.path.join(output_dir, 'md', 'summary', os.path.splitext(output_file)[0] + '.md')
+                    elif output_file.startswith('detail-'):
+                        md_path = os.path.join(output_dir, 'md', 'details', os.path.splitext(output_file)[0] + '.md')
+                    elif output_file.startswith('maven-'):
+                        md_path = os.path.join(output_dir, 'md', 'maven', os.path.splitext(output_file)[0] + '.md')
+                    else:
+                        md_path = os.path.join(output_dir, 'md', os.path.splitext(output_file)[0] + '.md')
+                
+                # 确保目录存在
+                os.makedirs(os.path.dirname(md_path), exist_ok=True)
+                
+                print(f"保存Markdown文件: {md_path}")
+                with open(md_path, 'w', encoding='utf-8') as f:
+                    f.write(report)
+                generated_files.append(md_path)
             
-            # 写入报告文件
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(report)
+            if format in ['html', 'both']:
+                print("开始生成HTML文件...")
+                html_content = convert_to_html(report)
+                if html_content:
+                    # 确定HTML文件的保存路径
+                    if args.flat_dir:
+                        html_path = os.path.join(output_dir, 'html', os.path.splitext(output_file)[0] + '.html')
+                    else:
+                        if output_file.startswith('summary-'):
+                            html_path = os.path.join(output_dir, 'html', 'summary', os.path.splitext(output_file)[0] + '.html')
+                        elif output_file.startswith('detail-'):
+                            html_path = os.path.join(output_dir, 'html', 'details', os.path.splitext(output_file)[0] + '.html')
+                        elif output_file.startswith('maven-'):
+                            html_path = os.path.join(output_dir, 'html', 'maven', os.path.splitext(output_file)[0] + '.html')
+                        else:
+                            html_path = os.path.join(output_dir, 'html', os.path.splitext(output_file)[0] + '.html')
+                    
+                    # 确保目录存在
+                    os.makedirs(os.path.dirname(html_path), exist_ok=True)
+                    
+                    print(f"保存HTML文件: {html_path}")
+                    try:
+                        with open(html_path, 'w', encoding='utf-8') as f:
+                            f.write(html_content)
+                        print("HTML文件保存成功")
+                        generated_files.append(html_path)
+                    except Exception as e:
+                        print(f"保存HTML文件时出错: {str(e)}")
+                        print(f"HTML内容前100个字符: {html_content[:100]}")
+                else:
+                    print("HTML内容生成失败")
             
-            return output_path
+            return generated_files
+            
         except Exception as e:
             print(f"保存报告时出错: {str(e)}")
+            print(f"完整错误信息: {e.__class__.__name__}: {str(e)}")
+            import traceback
+            print("错误堆栈:")
+            traceback.print_exc()
             sys.exit(1)
     
     def get_authors(self):
@@ -288,10 +328,10 @@ def generate_output_filename(repo_name, branch=None, authors=None, start_date=No
     """生成规范的输出文件名"""
     current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     
-    # 清理仓库名称（移除特殊字符）
+    # 清理仓库名称（移除特殊字）
     repo_name = ''.join(c if c.isalnum() or c in '-_' else '_' for c in repo_name)
     
-    # 构建文件名各部分
+    # 构建文件名部分
     parts = ['git_report', repo_name]
     
     # 添加分支信息
@@ -351,7 +391,7 @@ def format_search_conditions(branch=None, authors=None, start_date=None, end_dat
             'thisweek': '本周',
             'lastweek': '上周',
             'thismonth': '本月',
-            'lastmonth': '上个月'
+            'lastmonth': '上月'
         }
         conditions.append(f"时间范围: {date_map.get(date_shortcut, date_shortcut)}")
     elif start_date and end_date:
@@ -367,66 +407,72 @@ def format_search_conditions(branch=None, authors=None, start_date=None, end_dat
 
 def generate_report_directory(repo_name, branch=None, date_shortcut=None, start_date=None, end_date=None, maven_info=None):
     """生成规范的报告目录结构"""
-    # 基础目录结构：reports/{repo_name}/{year}/{month}/{branch}/{date_range}
+    # 基础目录结构：reports/{repo_name}/{year}/{month}/{timestamp}/{format}
     current_date = datetime.now()
-    year = current_date.strftime('%Y')
-    month = current_date.strftime('%m')
+    timestamp = current_date.strftime('%Y%m%d_%H%M%S')
     
     # 清理仓库名称中的特殊字符
     clean_repo_name = ''.join(c if c.isalnum() or c in '-_' else '_' for c in repo_name)
     
     # 构建基础路径
-    parts = ['reports', clean_repo_name, year, month]
+    parts = ['reports', clean_repo_name, current_date.strftime('%Y%m')]
     
-    # 添加分支目录
+    # 生成报告目录名
+    report_dir_name = []
+    
+    # 添加分支信息
     if branch:
         clean_branch = ''.join(c if c.isalnum() or c in '-_' else '_' for c in branch)
-        parts.append(clean_branch)
-    else:
-        parts.append('default_branch')
+        report_dir_name.append(clean_branch)
     
-    # 生成日期子目录
-    if date_shortcut:
-        date_dir = date_shortcut
-    elif start_date and end_date:
-        date_dir = f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}"
+    # 添加日期范围
+    if start_date and end_date:
+        report_dir_name.append(f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}")
     elif start_date:
-        date_dir = f"from_{start_date.strftime('%Y%m%d')}"
+        report_dir_name.append(f"{start_date.strftime('%Y%m%d')}")
     elif end_date:
-        date_dir = f"until_{end_date.strftime('%Y%m%d')}"
-    else:
-        date_dir = 'last_7_days'
+        report_dir_name.append(f"{end_date.strftime('%Y%m%d')}")
     
-    parts.append(date_dir)
+    # 添加时间戳
+    report_dir_name.append(timestamp)
     
-    # 生成完整路径
-    report_dir = os.path.join(*parts)
+    # 将报告目录名添加到路径中
+    parts.append('_'.join(report_dir_name))
+    
+    # 生成完整���径
+    base_dir = os.path.join(*parts)
     
     # 创建目录结构
     try:
-        os.makedirs(report_dir, exist_ok=True)
+        # 创建基础目录
+        os.makedirs(base_dir, exist_ok=True)
         
-        # 创建子目录
-        os.makedirs(os.path.join(report_dir, 'summary'), exist_ok=True)
-        os.makedirs(os.path.join(report_dir, 'details'), exist_ok=True)
-        if maven_info and maven_info.get('modules'):
-            os.makedirs(os.path.join(report_dir, 'maven'), exist_ok=True)
+        # 创建格式子目录
+        html_dir = os.path.join(base_dir, 'html')
+        md_dir = os.path.join(base_dir, 'md')
+        os.makedirs(html_dir, exist_ok=True)
+        os.makedirs(md_dir, exist_ok=True)
         
-        # 创建 assets 目录（用于存放图表等资源）
-        os.makedirs(os.path.join(report_dir, 'assets'), exist_ok=True)
+        # 如果不是单一目录，在格式目录下创建子目录
+        if not args.flat_dir:
+            for format_dir in [html_dir, md_dir]:
+                os.makedirs(os.path.join(format_dir, 'summary'), exist_ok=True)
+                os.makedirs(os.path.join(format_dir, 'details'), exist_ok=True)
+                if maven_info and maven_info.get('modules'):
+                    os.makedirs(os.path.join(format_dir, 'maven'), exist_ok=True)
         
     except Exception as e:
         print(f"创建目录结构时出错: {str(e)}")
         sys.exit(1)
     
-    return report_dir
+    return base_dir
 
 def analyze_maven_project(repo_path):
-    """分析Maven项目的结构和依赖"""
+    """分析Maven项目的结构赖"""
     maven_info = {
         'modules': [],
         'dependencies': defaultdict(list),
-        'module_paths': {}  # 用于存储路径到模块的映射
+        'module_paths': {}  # 用于储路径到模块的映射
     }
     
     try:
@@ -448,13 +494,13 @@ def analyze_maven_project(repo_path):
                 }
                 maven_info['modules'].append(module_info)
                 
-                # 添加路径映射
+                # 加路径映射
                 maven_info['module_paths'][relative_path] = module_info
                 # 如果是根路径，也添加映射
                 if relative_path == '.':
                     maven_info['module_paths'][''] = module_info
     except Exception as e:
-        print(f"分析Maven项目时出错: {str(e)}")
+        print(f"析Maven项目时出错: {str(e)}")
     
     return maven_info
 
@@ -475,7 +521,7 @@ def find_module_for_file(file_path, maven_info):
     return None
 
 def categorize_maven_changes(file_path):
-    """对Maven项目的文件变更进行分类"""
+    """对Maven项目的文更进行分类"""
     ext = os.path.splitext(file_path)[1].lower()
     basename = os.path.basename(file_path).lower()
     
@@ -493,7 +539,7 @@ def categorize_maven_changes(file_path):
             return '应用配置'
         return '资源文件'
     elif file_path.startswith('src/test/resources/'):
-        return '测���资源'
+        return '测试资源'
     
     # 其他常见目录
     if 'webapp' in file_path:
@@ -879,7 +925,7 @@ def generate_summary_report(commits, maven_info=None, repo_info=None):
     # 文件类型统计（使用新的分类方法）
     file_types = analyze_file_changes(commits)
     if file_types:
-        summary += "\n## 📁 文件类型分布\n\n"
+        summary += "\n## 📁 件类型分布\n\n"
         summary += "| 文件类型 | 文件数量 | 变更次数 | 添加行数 | 删除行数 | 占比 |\n"
         summary += "|----------|----------|----------|----------|----------|------|\n"
         
@@ -931,8 +977,55 @@ def generate_summary_report(commits, maven_info=None, repo_info=None):
 
     return summary
 
+def generate_index_filename(repo_name, branch=None, start_date=None, end_date=None):
+    """生成索引文件名"""
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    
+    # 清理仓库名称
+    clean_repo_name = ''.join(c if c.isalnum() or c in '-_' else '_' for c in repo_name)
+    
+    # 构建文件名部分
+    parts = ['index', clean_repo_name]
+    
+    # 添加分支信息
+    if branch:
+        clean_branch = ''.join(c if c.isalnum() or c in '-_' else '_' for c in branch)
+        parts.append(clean_branch)
+    
+    # 添加日期范围
+    if start_date and end_date:
+        parts.append(f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}")
+    elif start_date:
+        parts.append(f"{start_date.strftime('%Y%m%d')}")
+    elif end_date:
+        parts.append(f"{end_date.strftime('%Y%m%d')}")
+    else:
+        parts.append(current_time[:8])  # 只使用日期部分
+    
+    # 添加时间戳
+    parts.append(current_time[9:])  # 只使用时间部分
+    
+    return f"{'-'.join(parts)}"
+
 def generate_index_file(output_dir, summary_file, detail_file, maven_file=None, repo_info=None):
     """生成美观的索引文件"""
+    # 将文件扩展名从 .md 改为 .html
+    summary_html = summary_file.replace('.md', '.html')
+    detail_html = detail_file.replace('.md', '.html')
+    maven_html = maven_file.replace('.md', '.html') if maven_file else None
+
+    # 根据不同的格式目录调整相对路径
+    def get_relative_path(format_dir, file_path):
+        if args.flat_dir:
+            return file_path
+        else:
+            return f"{format_dir}/{file_path}"
+
+    # HTML 文件中的链接路径
+    summary_path = get_relative_path('summary', summary_html)
+    detail_path = get_relative_path('details', detail_html)
+    maven_path = get_relative_path('maven', maven_html) if maven_html else None
+
     index_content = f"""# 🔍 Git 提交分析报告
 
 ## 📌 基本信息
@@ -944,7 +1037,7 @@ def generate_index_file(output_dir, summary_file, detail_file, maven_file=None, 
 
 ## 📑 报告导航
 
-### 1️⃣ [总结报告](./summary/{summary_file})
+### 1️⃣ [总结报告]({summary_path})
 
 总结报告包含以下内容：
 - 变更概览统计
@@ -952,7 +1045,7 @@ def generate_index_file(output_dir, summary_file, detail_file, maven_file=None, 
 - 文件类型分布
 - 主要变更内容
 
-### 2️⃣ [详细报告](./details/{detail_file})
+### 2️⃣ [详细报告]({detail_path})
 
 详细报告包含以下内容：
 - 完整的提交记录
@@ -962,7 +1055,7 @@ def generate_index_file(output_dir, summary_file, detail_file, maven_file=None, 
 
     if maven_file:
         index_content += f"""
-### 3️⃣ [Maven 项目分析](./maven/{maven_file})
+### 3️⃣ [Maven 项目分析]({maven_path})
 
 Maven 项目分析包含：
 - 模块依赖分析
@@ -978,16 +1071,122 @@ Maven 项目分析包含：
 2. **详细报告**：适合深入查看具体变更内容
 3. **Maven分析**：适合了解模块级别的变更影响
 
-## 🔍 快速链接
-
-- [返回上级目录](../)
-- [查看资源文件](./assets/)
-
 ---
-*报告由 Git 提交分析工具自动生成*
+*由 Git 提交分析工具自动生成*
 """
 
     return index_content
+
+def generate_html_template():
+    """生成HTML模板，包含CSS样式"""
+    return '''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Git 提交分析报告</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;color:#333;max-width:1200px;margin:0 auto;padding:20px;background-color:#f5f5f5}
+.container{background-color:white;padding:30px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+h1,h2,h3,h4,h5,h6{color:#2c3e50;margin-top:24px;margin-bottom:16px}
+h1{font-size:2em;border-bottom:2px solid #eaecef;padding-bottom:0.3em}
+h2{font-size:1.5em;border-bottom:1px solid #eaecef;padding-bottom:0.3em}
+h3{font-size:1.25em}
+table{border-collapse:collapse;width:100%;margin:16px 0}
+th,td{border:1px solid #dfe2e5;padding:8px 12px;text-align:left}
+th{background-color:#f6f8fa}
+tr:nth-child(even){background-color:#f8f9fa}
+code{background-color:#f6f8fa;padding:2px 4px;border-radius:3px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;font-size:85%}
+pre{background-color:#f6f8fa;padding:16px;border-radius:6px;overflow:auto}
+a{color:#0366d6;text-decoration:none}
+a:hover{text-decoration:underline}
+.nav{position:fixed;top:20px;right:20px;background:white;padding:15px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.nav ul{list-style:none;padding:0;margin:0}
+.nav li{margin:8px 0}
+.badge{display:inline-block;padding:3px 6px;border-radius:3px;font-size:12px;font-weight:600;color:white;background-color:#28a745}
+.badge.red{background-color:#dc3545}
+.badge.blue{background-color:#0366d6}
+.badge.yellow{background-color:#ffd700;color:#333}
+ul{list-style-type:disc;padding-left:2em}
+li{margin:0.5em 0}
+code{word-wrap:break-word;max-width:100%}
+</style>
+</head>
+<body>
+<div class="container"><!-- CONTENT --></div>
+</body>
+</html>'''
+
+def convert_to_html(markdown_content):
+    """将Markdown内容转换为HTML"""
+    try:
+        print("开始转换Markdown到HTML...")
+        import markdown2
+        html_content = markdown2.markdown(
+            markdown_content,
+            extras=[
+                'tables',
+                'fenced-code-blocks',
+                'header-ids',
+                'toc',
+                'code-friendly'
+            ]
+        )
+        print("Markdown转换成功，开始应用模板...")
+        
+        # 获取HTML模板并使用字符串换
+        template = generate_html_template()
+        final_html = template.replace('<!-- CONTENT -->', html_content)
+        
+        print(f"HTML生成成功，内容长度: {len(final_html)}")
+        return final_html
+        
+    except ImportError:
+        print("警告: markdown2 库未安装，无法生成HTML文件")
+        print("请运行: pip install markdown2")
+        return None
+    except Exception as e:
+        print(f"转换HTML时出错: {str(e)}")
+        print(f"完整错误信息: {e.__class__.__name__}: {str(e)}")
+        import traceback
+        print("错误堆���:")
+        traceback.print_exc()
+        return None
+
+def create_zip_archive(output_dir, zip_name=None):
+    """创建报告的ZIP压缩包"""
+    # 使用目录名作为默认的zip名称
+    if not zip_name:
+        zip_name = os.path.basename(output_dir)
+    
+    if not zip_name.endswith('.zip'):
+        zip_name += '.zip'
+    
+    # 在输出目录下创建zip文件
+    zip_path = os.path.join(output_dir, zip_name)
+    
+    try:
+        import zipfile
+        print(f"\n开始创建ZIP压缩包: {zip_path}")
+        
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # 分别压缩 html 和 md 目录
+            for format_dir in ['html', 'md']:
+                format_path = os.path.join(output_dir, format_dir)
+                if os.path.exists(format_path):
+                    for root, _, files in os.walk(format_path):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            # 使用相对路径作为zip内的路径
+                            arcname = os.path.relpath(file_path, output_dir)
+                            print(f"添加文件: {arcname}")
+                            zipf.write(file_path, arcname)
+        
+        print(f"ZIP压缩包创建成功: {zip_path}")
+        return zip_path
+    except Exception as e:
+        print(f"创建ZIP压缩包时出错: {str(e)}")
+        return None
 
 def main():
     parser = argparse.ArgumentParser(description='生成Git仓库的提交报告')
@@ -997,13 +1196,20 @@ def main():
     parser.add_argument('--date', '-dt', choices=['today', 'yesterday', 'thisweek', 'lastweek', 'thismonth', 'lastmonth'],
                       help='日期快捷方式')
     parser.add_argument('--output', '-o', help='输出文件路径（可选，默认根据仓库名和日期自动生成）')
-    parser.add_argument('--output-dir', '-d', help='输出目录（可选，默认为 ./git_reports/仓库名）')
+    parser.add_argument('--output-dir', '-d', help='输出目录（可选，默认为 ./git_reports/库名）')
     parser.add_argument('--branch', '-b', help='指定要分析的分支（可选，默认为当前分支）')
     parser.add_argument('--authors', '-a', nargs='+', help='指定要分析的作者列表（可选，支持多个作者）')
     parser.add_argument('--list-branches', '-l', action='store_true', help='列出所有可用的分支')
     parser.add_argument('--list-authors', '-la', action='store_true', help='列出所有提交过的作者')
     parser.add_argument('--maven', '-m', action='store_true', help='生成Maven项目详细分析报告')
+    parser.add_argument('--format', '-f', choices=['md', 'html', 'both'], default='md',
+                      help='输出格式：md (仅Markdown)，html (仅HTML)，both (同时生成两种格式)')
+    parser.add_argument('--flat-dir', action='store_true', default=True,
+                      help='使用单一目录存储所有报告文件（默认：是）')
+    parser.add_argument('--zip', '-z', nargs='?', const='', metavar='ZIP_NAME',
+                      help='创建ZIP压缩包（可选指定压缩包名称）')
     
+    global args
     args = parser.parse_args()
     
     # 检查路径是否存在
@@ -1018,7 +1224,7 @@ def main():
         start_date = parse_date(args.start_date) if args.start_date else None
         end_date = parse_date(args.end_date) if args.end_date else None
     
-    # 创建报告生成器实例（带有指定的分支）
+    # 创建报告生成实例（带有指定的分支）
     generator = GitReportGenerator(args.repo_path, args.branch)
     
     # 显示分析信息
@@ -1058,7 +1264,7 @@ def main():
         if maven_info['modules']:
             maven_report = generate_maven_report(maven_info, commits)
     
-    # 确定输出目录（移到获取maven_info之后）
+    # 确定输出目录
     if args.output_dir:
         output_dir = args.output_dir
     else:
@@ -1102,12 +1308,23 @@ def main():
     detail_file = f"detail-{output_file}"
     maven_file = f"maven-{output_file}" if maven_report else None
     
+    # 确定输出格式
+    output_format = 'both' if args.format == 'both' else args.format
+    
     # 保存报告
-    summary_path = generator.save_report(summary_report, output_dir, summary_file)
-    detail_path = generator.save_report(detail_report, output_dir, detail_file)
+    summary_paths = generator.save_report(summary_report, output_dir, summary_file, format=output_format)
+    detail_paths = generator.save_report(detail_report, output_dir, detail_file, format=output_format)
     
     if maven_report:
-        maven_path = generator.save_report(maven_report, output_dir, maven_file)
+        maven_paths = generator.save_report(maven_report, output_dir, maven_file, format=output_format)
+    
+    # 生成索引文件名
+    index_base = generate_index_filename(
+        generator.repo_name,
+        args.branch,
+        start_date,
+        end_date
+    )
     
     # 生成索引文件
     index_content = generate_index_file(
@@ -1118,17 +1335,33 @@ def main():
         repo_info
     )
     
-    index_path = generator.save_report(index_content, output_dir, "index.md")
+    index_paths = generator.save_report(index_content, output_dir, index_base, format=output_format)
     
     # 输出结果
     print("\n📊 报告生成完成！")
     print(f"\n📂 报告目录: {output_dir}")
     print("\n📑 生成的文件:")
-    print(f"- 索引文件: {index_path}")
-    print(f"- 总结报告: {summary_path}")
-    print(f"- 详细报告: {detail_path}")
+    
+    def print_paths(label, paths):
+        if len(paths) == 1:
+            print(f"- {label}: {paths[0]}")
+        else:
+            print(f"- {label}:")
+            for path in paths:
+                print(f"  - {path}")
+    
+    print_paths("索引文件", index_paths)
+    print_paths("总结报告", summary_paths)
+    print_paths("详细报告", detail_paths)
     if maven_report:
-        print(f"- Maven分析: {maven_path}")
+        print_paths("Maven分析", maven_paths)
+    
+    # 如果需要创建ZIP压缩包
+    if args.zip is not None:
+        zip_path = create_zip_archive(output_dir, args.zip)
+        if zip_path:
+            print(f"\n📦 ZIP压缩包: {zip_path}")
+    
     print("\n✨ 完成！")
 
 if __name__ == "__main__":
